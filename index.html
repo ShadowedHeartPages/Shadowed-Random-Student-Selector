@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadowed Random Student Selector</title>
+    <link rel="icon" type="image/x-icon" href="Icon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 30px;
+            padding: 45px;
+            max-width: 900px; /* Aumentado de 750px */
+            width: 100%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid transparent;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 26px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .lang-btn:hover {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .lang-btn.active {
+            border-color: #667eea;
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 16px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8edf2 100%);
+            border: 3px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-size: 16px;
+            font-weight: 700;
+            color: #666;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            transition: left 0.4s;
+        }
+
+        .mode-btn:hover::before {
+            left: 0;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #444;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+
+        .animation-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .anim-btn {
+            padding: 20px 10px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 3px solid #dee2e6;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .anim-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .anim-btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .anim-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .anim-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8ecff 100%);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+            transform: translateY(-5px);
+        }
+
+        .anim-icon {
+            font-size: 42px;
+            margin-bottom: 8px;
+            display: block;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            position: relative;
+            z-index: 1;
+        }
+
+        .anim-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #555;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wheel-type-selector {
+            display: none;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .wheel-type-selector.show {
+            display: flex;
+        }
+
+        .wheel-type-btn {
+            flex: 1;
+            padding: 12px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 700;
+            color: #666;
+        }
+
+        .wheel-type-btn:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+        }
+
+        .wheel-type-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 19px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .start-btn:hover::before {
+            width: 500px;
+            height: 500px;
+        }
+
+        .start-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .start-btn:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .stop-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 19px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            display: none;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .stop-btn.show {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6); }
+        }
+
+        .result-area {
+            min-height: 600px; /* Aumentado de 400px */
+            width: 100%;      /* Añadido para asegurar ancho completo */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #dee2e6;
+        }
+
+        .result-text {
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            padding: 25px;
+            opacity: 0;
+            transition: opacity 0.5s;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-text.show {
+            opacity: 1;
+            animation: resultPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes resultPop {
+            0% { transform: scale(0) rotate(-180deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Animación Ruleta Mejorada */
+        .wheel-container {
+            position: relative;
+            width: 500px;     /* Aumentado de 320px */
+            height: 500px;    /* Aumentado de 320px */
+            filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.3));
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 12px solid #fff;
+            position: relative;
+            box-shadow: 0 0 0 4px #667eea, inset 0 0 30px rgba(0, 0, 0, 0.1);
+            will-change: transform;
+        }
+
+        .wheel-segment {
+            display: none;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 22px solid transparent;
+            border-right: 22px solid transparent;
+            border-top: 40px solid #ff6b6b;
+            z-index: 10;
+            filter: drop-shadow(0 8px 15px rgba(255, 107, 107, 0.5));
+            animation: pointerBounce 0.8s ease-in-out infinite;
+        }
+
+        @keyframes pointerBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-radius: 50%;
+            border: 6px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            z-index: 5;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Animación Slot Machine */
+        .slot-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            transform: scale(1.4); /* Añadido para hacer el slot más grande */
+            margin: 40px 0;       /* Añadido para dar espacio */
+        }
+
+        .slot-reel {
+            width: 140px;     /* Aumentado de 100px */
+            height: 400px;    /* Aumentado de 250px */
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            border: 5px solid #fff;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .slot-items {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            transition: top 0.1s linear;
+        }
+
+        .slot-item {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slot-window {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 80px;
+            transform: translateY(-50%);
+            border-top: 3px solid #ffd700;
+            border-bottom: 3px solid #ffd700;
+            pointer-events: none;
+            z-index: 1;
+            box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Animación Cartas */
+        .cards-container {
+            display: flex;
+            gap: 25px;        /* Aumentado de 15px */
+            flex-wrap: wrap;
+            justify-content: center;
+            perspective: 1000px;
+            padding: 40px;    /* Aumentado de 20px */
+        }
+
+        .card {
+            width: 140px;     /* Aumentado de 100px */
+            height: 200px;    /* Aumentado de 140px */
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+
+        .card.flip {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 18px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+            color: #333;
+            padding: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        /* Animación Bingo Balls */
+        .bingo-container {
+            position: relative;
+            width: 100%;
+            height: 550px;    /* Aumentado de 350px */
+        }
+
+        .bingo-machine {
+            width: 400px;     /* Aumentado de 280px */
+            height: 400px;    /* Aumentado de 280px */
+            margin: 0 auto;
+            border: 8px solid #fff;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(102,126,234,0.2) 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.2), 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .bingo-ball {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #ffd700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 20px;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 3px solid #fff;
+        }
+
+        .bingo-result {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-radius: 50%;
+            border: 6px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 900;
+            color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Animación Dado */
+        .dice-container {
+            perspective: 1000px;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            transform: scale(1.5); /* Añadido para hacer el dado más grande */
+            margin: 40px 0;       /* Añadido para dar espacio */
+        }
+
+        .dice {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+        }
+
+        .dice-face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+            border: 6px solid #667eea;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            font-weight: 900;
+            color: #667eea;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .dice-face-1 { transform: translateZ(100px); }
+        .dice-face-2 { transform: rotateY(180deg) translateZ(100px); }
+        .dice-face-3 { transform: rotateY(90deg) translateZ(100px); }
+        .dice-face-4 { transform: rotateY(-90deg) translateZ(100px); }
+        .dice-face-5 { transform: rotateX(90deg) translateZ(100px); }
+        .dice-face-6 { transform: rotateX(-90deg) translateZ(100px); }
+
+        /* Animación Caja 3D Mejorada */
+        .box-container {
+            position: relative;
+            width: 300px;     /* Reducido de 400px */
+            height: 300px;    /* Reducido de 400px */
+            perspective: 1500px;
+            margin: 50px auto;
+            transform-style: preserve-3d;
+        }
+
+        .box {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+        }
+
+        .box-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            border: 8px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px; /* Reducido de 160px */
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
+            backface-visibility: visible;
+        }
+
+        /* Ajustar las transformaciones de las caras */
+        .box-front { transform: translateZ(150px); }
+        .box-back { transform: rotateY(180deg) translateZ(150px); }
+        .box-right { transform: rotateY(90deg) translateZ(150px); }
+        .box-left { transform: rotateY(-90deg) translateZ(150px); }
+        .box-top { 
+            transform: rotateX(90deg) translateZ(150px);
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        .box-bottom { 
+            transform: rotateX(-90deg) translateZ(150px);
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        @keyframes openBox {
+            0% { transform: rotateX(0) rotateY(0) scale(1); }
+            30% { transform: rotateX(-10deg) rotateY(10deg) scale(1.05); }
+            60% { transform: rotateX(-30deg) rotateY(30deg) translateZ(50px) scale(1.1); }
+            100% { transform: rotateX(-40deg) rotateY(40deg) translateZ(80px) scale(1.15); }
+        }
+
+        /* Ajuste para dispositivos móviles */
+        @media (max-width: 768px) {
+            .box-container {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .box-face {
+                font-size: 50px;
+            }
+        }
+
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .particle {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .particle.burst {
+            animation: particle-burst 1.5s ease-out forwards;
+        }
+
+        @keyframes particle-burst {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0) rotate(720deg);
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            top: -10px;
+            z-index: 9999;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .firework {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            z-index: 9999;
+            animation: fireworkExplode 1s ease-out forwards;
+        }
+
+        @keyframes fireworkExplode {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--fx), var(--fy));
+                opacity: 0;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .animation-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .anim-icon {
+                font-size: 32px;
+            }
+
+            .anim-name {
+                font-size: 11px;
+            }
+
+            .result-text {
+                font-size: 2rem;
+            }
+
+            .wheel-container {
+                width: 260px;
+                height: 260px;
+            }
+
+            .box-container {
+                width: 220px;
+                height: 220px;
+            }
+
+            .box-face {
+                width: 220px;
+                height: 220px;
+                font-size: 90px;
+            }
+        }
+
+        .game-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(60, 40, 100, 0.85);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .game-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .game-modal-content {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+            max-width: 900px;
+            width: 100%;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transform: scale(0.7);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .game-modal.show .game-modal-content {
+            transform: scale(1);
+        }
+
+        .close-modal-btn {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 28px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+            transition: transform 0.2s;
+            z-index: 100;
+            animation: pulse 1.5s infinite;
+        }
+
+        .close-modal-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="language-selector">
+        <button class="lang-btn active" data-lang="es">🇪🇸</button>
+        <button class="lang-btn" data-lang="en">🇬🇧</button>
+        <button class="lang-btn" data-lang="fr">🇫🇷</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1 id="title">Selector Aleatorio de Estudiantes</h1>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="numbers" id="modeNumbers">📊 Por Números</button>
+            <button class="mode-btn" data-mode="names" id="modeNames">👤 Por Nombres</button>
+        </div>
+
+        <div class="input-section" id="numbersInput">
+            <label for="studentCount" id="labelCount">Cantidad de estudiantes:</label>
+            <input type="number" id="studentCount" min="1" value="30" placeholder="Ej: 30">
+        </div>
+
+        <div class="input-section hidden" id="namesInput">
+            <label for="studentNames" id="labelNames">Nombres de estudiantes (uno por línea):</label>
+            <textarea id="studentNames" placeholder="Juan Pérez&#10;María González&#10;Pedro López"></textarea>
+        </div>
+
+        <div class="animation-selector">
+            <div class="anim-btn active" data-anim="wheel">
+                <div class="anim-icon">🎡</div>
+                <div class="anim-name" id="animWheel">Ruleta</div>
+            </div>
+            <div class="anim-btn" data-anim="slot">
+                <div class="anim-icon">🎰</div>
+                <div class="anim-name" id="animSlot">Slot</div>
+            </div>
+            <div class="anim-btn" data-anim="cards">
+                <div class="anim-icon">🃏</div>
+                <div class="anim-name" id="animCards">Cartas</div>
+            </div>
+            <div class="anim-btn" data-anim="bingo">
+                <div class="anim-icon">⚽</div>
+                <div class="anim-name" id="animBingo">Bingo</div>
+            </div>
+            <div class="anim-btn" data-anim="dice">
+                <div class="anim-icon">🎲</div>
+                <div class="anim-name" id="animDice">Dado</div>
+            </div>
+            <div class="anim-btn" data-anim="box">
+                <div class="anim-icon">📦</div>
+                <div class="anim-name" id="animBox">Caja</div>
+            </div>
+        </div>
+
+        <div class="wheel-type-selector" id="wheelTypeSelector">
+            <button class="wheel-type-btn active" data-type="auto" id="wheelAuto">⚡ Automática</button>
+            <button class="wheel-type-btn" data-type="manual" id="wheelManual">✋ Manual</button>
+        </div>
+
+        <button class="start-btn" id="startBtn">🎲 Seleccionar Estudiante</button>
+        <button class="stop-btn" id="stopBtn">⏹️ DETENER</button>
+
+        <div class="result-area" id="resultArea">
+            <div class="result-text" id="resultText">Presiona el botón para comenzar</div>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            es: {
+                title: 'Selector Aleatorio de Estudiantes',
+                modeNumbers: '📊 Por Números',
+                modeNames: '👤 Por Nombres',
+                labelCount: 'Cantidad de estudiantes:',
+                labelNames: 'Nombres de estudiantes (uno por línea):',
+                animWheel: 'Ruleta',
+                animSlot: 'Slot',
+                animCards: 'Cartas',
+                animBingo: 'Bingo',
+                animDice: 'Dado',
+                animBox: 'Caja',
+                startBtn: '🎲 Seleccionar Estudiante',
+                stopBtn: '⏹️ DETENER',
+                selected: 'Seleccionado',
+                student: 'Estudiante',
+                placeholder: 'Juan Pérez\nMaría González\nPedro López',
+                initialText: 'Presiona el botón para comenzar',
+                wheelAuto: '⚡ Automática',
+                wheelManual: '✋ Manual',
+                clickCard: 'Haz clic en una carta'
+            },
+            en: {
+                title: 'Random Student Selector',
+                modeNumbers: '📊 By Numbers',
+                modeNames: '👤 By Names',
+                labelCount: 'Number of students:',
+                labelNames: 'Student names (one per line):',
+                animWheel: 'Wheel',
+                animSlot: 'Slot',
+                animCards: 'Cards',
+                animBingo: 'Bingo',
+                animDice: 'Dice',
+                animBox: 'Box',
+                startBtn: '🎲 Select Student',
+                stopBtn: '⏹️ STOP',
+                selected: 'Selected',
+                student: 'Student',
+                placeholder: 'John Smith\nMary Johnson\nPeter Brown',
+                initialText: 'Press the button to start',
+                wheelAuto: '⚡ Automatic',
+                wheelManual: '✋ Manual',
+                clickCard: 'Click on a card'
+            },
+            fr: {
+                title: 'Sélecteur Aléatoire d\'Étudiants',
+                modeNumbers: '📊 Par Numéros',
+                modeNames: '👤 Par Noms',
+                labelCount: 'Nombre d\'étudiants:',
+                labelNames: 'Noms des étudiants (un par ligne):',
+                animWheel: 'Roue',
+                animSlot: 'Machine',
+                animCards: 'Cartes',
+                animBingo: 'Bingo',
+                animDice: 'Dé',
+                animBox: 'Boîte',
+                startBtn: '🎲 Sélectionner Étudiant',
+                stopBtn: '⏹️ ARRÊTER',
+                selected: 'Sélectionné',
+                student: 'Étudiant',
+                placeholder: 'Jean Dupont\nMarie Martin\nPierre Bernard',
+                initialText: 'Appuyez sur le bouton',
+                wheelAuto: '⚡ Automatique',
+                wheelManual: '✋ Manuel',
+                clickCard: 'Cliquez sur une carte'
+            }
+        };
+
+        let currentLang = 'es';
+        let currentMode = 'numbers';
+        let currentAnim = 'wheel';
+        let wheelType = 'auto';
+        let isAnimating = false;
+        let wheelRotation = 0;
+        let wheelInterval = null;
+        let wheelSpeed = 0;
+
+        const langBtns = document.querySelectorAll('.lang-btn');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        const animBtns = document.querySelectorAll('.anim-btn');
+        const wheelTypeBtns = document.querySelectorAll('.wheel-type-btn');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resultArea = document.getElementById('resultArea');
+        const resultText = document.getElementById('resultText');
+        const numbersInput = document.getElementById('numbersInput');
+        const namesInput = document.getElementById('namesInput');
+        const studentCount = document.getElementById('studentCount');
+        const studentNames = document.getElementById('studentNames');
+        const wheelTypeSelector = document.getElementById('wheelTypeSelector');
+
+        langBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                langBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLang = btn.dataset.lang;
+                updateTexts();
+            });
+        });
+
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+                
+                if (currentMode === 'numbers') {
+                    numbersInput.classList.remove('hidden');
+                    namesInput.classList.add('hidden');
+                } else {
+                    numbersInput.classList.add('hidden');
+                    namesInput.classList.remove('hidden');
+                }
+            });
+        });
+
+        animBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                animBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentAnim = btn.dataset.anim;
+                
+                if (currentAnim === 'wheel') {
+                    wheelTypeSelector.classList.add('show');
+                } else {
+                    wheelTypeSelector.classList.remove('show');
+                }
+            });
+        });
+
+        wheelTypeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                wheelTypeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                wheelType = btn.dataset.type;
+            });
+        });
+
+        function updateTexts() {
+            const t = translations[currentLang];
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('modeNumbers').textContent = t.modeNumbers;
+            document.getElementById('modeNames').textContent = t.modeNames;
+            document.getElementById('labelCount').textContent = t.labelCount;
+            document.getElementById('labelNames').textContent = t.labelNames;
+            document.getElementById('animWheel').textContent = t.animWheel;
+            document.getElementById('animSlot').textContent = t.animSlot;
+            document.getElementById('animCards').textContent = t.animCards;
+            document.getElementById('animBingo').textContent = t.animBingo;
+            document.getElementById('animDice').textContent = t.animDice;
+            document.getElementById('animBox').textContent = t.animBox;
+            document.getElementById('startBtn').textContent = t.startBtn;
+            document.getElementById('stopBtn').textContent = t.stopBtn;
+            document.getElementById('wheelAuto').textContent = t.wheelAuto;
+            document.getElementById('wheelManual').textContent = t.wheelManual;
+            studentNames.placeholder = t.placeholder;
+            if (!isAnimating) {
+                resultText.textContent = t.initialText;
+            }
+        }
+
+        function getStudentList() {
+            if (currentMode === 'numbers') {
+                const count = parseInt(studentCount.value) || 1;
+                return Array.from({length: count}, (_, i) => i + 1);
+            } else {
+                const names = studentNames.value.split('\n').filter(n => n.trim());
+                return names.length > 0 ? names.map(n => n.trim()) : ['Estudiante 1'];
+            }
+        }
+
+        function getRandomStudent() {
+            const list = getStudentList();
+            return list[Math.floor(Math.random() * list.length)];
+        }
+
+        function createWheelSegments(students) {
+            const colors = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+                'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)'
+            ];
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 640;
+            const ctx = canvas.getContext('2d');
+            
+            const centerX = 320;
+            const centerY = 320;
+            const radius = 300;
+            const segmentAngle = (2 * Math.PI) / students.length;
+
+            students.forEach((student, i) => {
+                const startAngle = i * segmentAngle - Math.PI / 2;
+                const endAngle = startAngle + segmentAngle;
+                
+                // Crear gradiente
+                const gradient = ctx.createLinearGradient(
+                    centerX + Math.cos(startAngle) * radius,
+                    centerY + Math.sin(startAngle) * radius,
+                    centerX + Math.cos(endAngle) * radius,
+                    centerY + Math.sin(endAngle) * radius
+                );
+                
+                const colorIndex = i % colors.length;
+                const colorMap = {
+                    0: ['#667eea', '#764ba2'],
+                    1: ['#f093fb', '#f5576c'],
+                    2: ['#4facfe', '#00f2fe'],
+                    3: ['#43e97b', '#38f9d7'],
+                    4: ['#fa709a', '#fee140'],
+                    5: ['#30cfd0', '#330867'],
+                    6: ['#a8edea', '#fed6e3'],
+                    7: ['#ff9a9e', '#fecfef'],
+                    8: ['#ffecd2', '#fcb69f'],
+                    9: ['#ff6e7f', '#bfe9ff']
+                };
+                
+                gradient.addColorStop(0, colorMap[colorIndex][0]);
+                gradient.addColorStop(1, colorMap[colorIndex][1]);
+                
+                // Dibujar segmento
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                // Línea divisoria blanca
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + Math.cos(endAngle) * radius, centerY + Math.sin(endAngle) * radius);
+                ctx.stroke();
+                
+                // Dibujar texto
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + segmentAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${students.length > 20 ? '14' : students.length > 10 ? '16' : '18'}px "Segoe UI"`;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 2;
+                
+                const displayText = currentMode === 'numbers' ? `#${student}` : (student.length > 10 ? student.substring(0, 9) + '.' : student);
+                ctx.fillText(displayText, radius - 30, 0);
+                ctx.restore();
+            });
+            
+            return canvas.toDataURL();
+        }
+
+        function animateWheelAuto(students) {
+            const wheelImage = createWheelSegments(students);
+            
+            resultArea.innerHTML = `
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheel" style="background-image: url('${wheelImage}'); background-size: cover; background-position: center;"></div>
+                    <div class="wheel-center">🎯</div>
+                </div>
+            `;
+
+            const wheel = document.getElementById('wheel');
+            const spins = 8 + Math.random() * 4;
+            const finalRotation = spins * 360 + Math.random() * 360;
+            
+            wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+            
+            setTimeout(() => {
+                wheel.style.transform = `rotate(${finalRotation}deg)`;
+            }, 50);
+
+            setTimeout(() => {
+                const segmentAngle = 360 / students.length;
+                const normalizedRotation = finalRotation % 360;
+                const selectedIndex = Math.floor((360 - normalizedRotation) / segmentAngle) % students.length;
+                const result = students[selectedIndex];
+                
+                createFireworks();
+                createConfetti();
+                setTimeout(() => showResult(result), 500);
+            }, 5500);
+        }
+
+        function animateWheelManual(students) {
+            const wheelImage = createWheelSegments(students);
+            
+            resultArea.innerHTML = `
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheel" style="background-image: url('${wheelImage}'); background-size: cover; background-position: center;"></div>
+                    <div class="wheel-center">🎯</div>
+                </div>
+            `;
+
+            const wheel = document.getElementById('wheel');
+            wheelRotation = 0;
+            wheelSpeed = 35;
+            
+            startBtn.style.display = 'none';
+            stopBtn.classList.add('show');
+
+            wheelInterval = setInterval(() => {
+                wheelRotation += wheelSpeed;
+                wheel.style.transform = `rotate(${wheelRotation}deg)`;
+            }, 16);
+        }
+
+        function stopWheel() {
+            if (!wheelInterval) return;
+
+            clearInterval(wheelInterval);
+            wheelInterval = null;
+
+            const wheel = document.getElementById('wheel');
+            const students = getStudentList();
+            
+            const decelerationSteps = 80;
+            let currentStep = 0;
+            let currentSpeed = wheelSpeed;
+
+            const decelerate = setInterval(() => {
+                currentStep++;
+                currentSpeed *= 0.94;
+                wheelRotation += currentSpeed;
+                wheel.style.transform = `rotate(${wheelRotation}deg)`;
+
+                if (currentStep >= decelerationSteps || currentSpeed < 0.3) {
+                    clearInterval(decelerate);
+                    
+                    const segmentAngle = 360 / students.length;
+                    const normalizedRotation = wheelRotation % 360;
+                    const selectedIndex = Math.floor((360 - normalizedRotation) / segmentAngle) % students.length;
+                    const result = students[selectedIndex];
+                    
+                    stopBtn.classList.remove('show');
+                    startBtn.style.display = 'block';
+                    createFireworks();
+                    createConfetti();
+                    
+                    setTimeout(() => showResult(result), 500);
+                }
+            }, 16);
+        }
+
+        function animateSlot(result) {
+            const students = getStudentList();
+            const shuffled = [...students].sort(() => Math.random() - 0.5);
+            const extendedList = [...shuffled, ...shuffled, ...shuffled, ...shuffled];
+            
+            resultArea.innerHTML = `
+                <div class="slot-container">
+                    <div class="slot-reel">
+                        <div class="slot-items" id="slotItems"></div>
+                        <div class="slot-window"></div>
+                    </div>
+                </div>
+            `;
+
+            const slotItems = document.getElementById('slotItems');
+            let html = '';
+            extendedList.forEach(student => {
+                const displayText = currentMode === 'numbers' ? `#${student}` : student;
+                html += `<div class="slot-item">${displayText}</div>`;
+            });
+            slotItems.innerHTML = html;
+
+            let position = 0;
+            let speed = 30;
+            let counter = 0;
+            const maxIterations = 100;
+
+            const spinInterval = setInterval(() => {
+                position += speed;
+                slotItems.style.top = `-${position}px`;
+                counter++;
+
+                if (counter > maxIterations) {
+                    speed *= 0.95;
+                    if (speed < 2) {
+                        clearInterval(spinInterval);
+                        createFireworks();
+                        createConfetti();
+                        setTimeout(() => showResult(result), 500);
+                    }
+                }
+
+                if (position >= 80 * extendedList.length) {
+                    position = 0;
+                }
+            }, 50);
+        }
+
+        function animateCards(result) {
+            const students = getStudentList();
+            const shuffled = students.sort(() => Math.random() - 0.5).slice(0, Math.min(12, students.length));
+            const resultIndex = Math.floor(Math.random() * shuffled.length);
+            shuffled[resultIndex] = result;
+
+            resultArea.innerHTML = `<div class="cards-container" id="cardsContainer"></div>`;
+            const container = document.getElementById('cardsContainer');
+
+            let cardsRevealed = 0;
+
+            shuffled.forEach((student, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const displayText = currentMode === 'numbers' ? `#${student}` : student;
+                card.innerHTML = `
+                    <div class="card-face card-front">?</div>
+                    <div class="card-face card-back">${displayText}</div>
+                `;
+                card.style.animationDelay = `${index * 0.1}s`;
+                container.appendChild(card);
+
+                setTimeout(() => {
+                    card.addEventListener('click', () => {
+                        if (!card.classList.contains('flip') && cardsRevealed === 0) {
+                            card.classList.add('flip');
+                            cardsRevealed++;
+                            
+                            setTimeout(() => {
+                                createFireworks();
+                                createConfetti();
+                                showResult(student);
+                            }, 600);
+                        }
+                    });
+                }, index * 100 + 500);
+            });
+        }
+
+        function animateBingo(result) {
+            resultArea.innerHTML = `
+                <div class="bingo-container">
+                    <div class="bingo-machine" id="bingoMachine">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: 900; color: rgba(255,255,255,0.5); z-index: 1; text-align: center;">
+                            MEZCLANDO...
+                        </div>
+                    </div>
+                    <div class="bingo-result" id="bingoResult" style="opacity: 0;">?</div>
+                </div>
+            `;
+
+            const machine = document.getElementById('bingoMachine');
+            const resultDiv = document.getElementById('bingoResult');
+            const balls = [];
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffd93d', '#6bcf7f', '#a78bfa'];
+
+            for (let i = 0; i < 10; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'bingo-ball';
+                ball.textContent = '●';
+                ball.style.background = `radial-gradient(circle at 30% 30%, #fff, ${colors[i % colors.length]})`;
+                ball.style.left = Math.random() * 220 + 'px';
+                ball.style.top = Math.random() * 220 + 'px';
+                ball.style.fontSize = '36px';
+                machine.appendChild(ball);
+                balls.push(ball);
+            }
+
+            balls.forEach(ball => {
+                let vx = (Math.random() - 0.5) * 10;
+                let vy = (Math.random() - 0.5) * 10;
+                let x = parseFloat(ball.style.left);
+                let y = parseFloat(ball.style.top);
+
+                const moveInterval = setInterval(() => {
+                    x += vx;
+                    y += vy;
+
+                    if (x <= 0 || x >= 210) vx *= -1;
+                    if (y <= 0 || y >= 210) vy *= -1;
+
+                    ball.style.left = x + 'px';
+                    ball.style.top = y + 'px';
+                }, 30);
+
+                setTimeout(() => {
+                    clearInterval(moveInterval);
+                    ball.style.transition = 'all 0.8s ease-out';
+                    ball.style.left = '115px';
+                    ball.style.top = '115px';
+                    ball.style.opacity = '0';
+                }, 3000);
+            });
+
+            setTimeout(() => {
+                const displayText = currentMode === 'numbers' ? `#${result}` : result.toString().substring(0, 6);
+                resultDiv.textContent = displayText;
+                resultDiv.style.opacity = '1';
+                resultDiv.style.transition = 'all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                resultDiv.style.transform = 'translateX(-50%) scale(1)';
+                createFireworks();
+                createConfetti();
+                setTimeout(() => showResult(result), 1500);
+            }, 3800);
+        }
+
+        function animateDice(result) {
+            resultArea.innerHTML = `
+                <div class="dice-container">
+                    <div class="dice" id="dice">
+                        <div class="dice-face dice-face-1">${currentMode === 'numbers' ? '#' : ''}${result.toString().substring(0, 8)}</div>
+                        <div class="dice-face dice-face-2">🎲</div>
+                        <div class="dice-face dice-face-3">✨</div>
+                        <div class="dice-face dice-face-4">🌟</div>
+                        <div class="dice-face dice-face-5">⭐</div>
+                        <div class="dice-face dice-face-6">💫</div>
+                    </div>
+                </div>
+            `;
+
+            const dice = document.getElementById('dice');
+            let rotations = 0;
+            const maxRotations = 20;
+
+            const rollInterval = setInterval(() => {
+                const rx = (Math.floor(Math.random() * 4) * 90) + (Math.random() * 360);
+                const ry = (Math.floor(Math.random() * 4) * 90) + (Math.random() * 360);
+                const rz = (Math.floor(Math.random() * 4) * 90) + (Math.random() * 360);
+                dice.style.transition = 'transform 0.2s ease-out';
+                dice.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`;
+                rotations++;
+
+                if (rotations >= maxRotations) {
+                    clearInterval(rollInterval);
+                    dice.style.transition = 'transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                    dice.style.transform = 'rotateX(0deg) rotateY(0deg) rotateZ(0deg)';
+                    setTimeout(() => {
+                        createFireworks();
+                        createConfetti();
+                        showResult(result);
+                    }, 1200);
+                }
+            }, 100);
+        }
+
+        function animateBox(result) {
+            resultArea.innerHTML = `
+                <div class="box-container">
+                    <div class="box" id="box">
+                        <div class="box-face box-front">📦</div>
+                        <div class="box-face box-back">📦</div>
+                        <div class="box-face box-right">📦</div>
+                        <div class="box-face box-left">📦</div>
+                        <div class="box-face box-top">✨</div>
+                        <div class="box-face box-bottom">🎁</div>
+                    </div>
+                    <div class="particles" id="particles"></div>
+                </div>
+            `;
+
+            const box = document.getElementById('box');
+            box.classList.add('shake');
+
+            setTimeout(() => {
+                box.classList.remove('shake');
+                box.classList.add('open');
+                createParticles();
+                
+                setTimeout(() => {
+                    createFireworks();
+                    createConfetti();
+                    showResult(result);
+                }, 1200);
+            }, 2800);
+        }
+
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#ffd93d', '#6bcf7f', '#a78bfa'];
+            
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const angle = (Math.PI * 2 * i) / 40;
+                const distance = 150 + Math.random() * 100;
+                particle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                particle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.boxShadow = `0 0 15px ${colors[Math.floor(Math.random() * colors.length)]}`;
+                particle.classList.add('burst');
+                particles.appendChild(particle);
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffd93d', '#6bcf7f', '#a78bfa', '#fb7185', '#38bdf8', '#f472b6', '#a78bfa'];
+            
+            for (let i = 0; i < 60; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 25);
+            }
+        }
+
+        function createFireworks() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffd93d', '#6bcf7f', '#a78bfa'];
+            
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const x = 20 + Math.random() * 60;
+                    const y = 20 + Math.random() * 40;
+                    
+                    for (let j = 0; j < 25; j++) {
+                        const firework = document.createElement('div');
+                        firework.className = 'firework';
+                        firework.style.left = x + '%';
+                        firework.style.top = y + '%';
+                        firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        const angle = (Math.PI * 2 * j) / 25;
+                        const distance = 80 + Math.random() * 40;
+                        firework.style.setProperty('--fx', `${Math.cos(angle) * distance}px`);
+                        firework.style.setProperty('--fy', `${Math.sin(angle) * distance}px`);
+                        
+                        document.body.appendChild(firework);
+                        setTimeout(() => firework.remove(), 1000);
+                    }
+                }, i * 300);
+            }
+        }
+
+        function showResult(result) {
+            const t = translations[currentLang];
+            const displayText = currentMode === 'numbers' 
+                ? `${t.student} #${result}` 
+                : result;
+            
+            resultArea.innerHTML = `<div class="result-text show">${displayText}</div>`;
+            isAnimating = false;
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            resultText.classList.remove('show');
+            
+            const result = getRandomStudent();
+            const students = getStudentList();
+            
+            switch(currentAnim) {
+                case 'wheel':
+                    if (wheelType === 'auto') {
+                        animateWheelAuto(students);
+                    } else {
+                        animateWheelManual(students);
+                    }
+                    break;
+                case 'slot':
+                    animateSlot(result);
+                    break;
+                case 'cards':
+                    animateCards(result);
+                    break;
+                case 'bingo':
+                    animateBingo(result);
+                    break;
+                case 'dice':
+                    animateDice(result);
+                    break;
+                case 'box':
+                    animateBox(result);
+                    break;
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            stopWheel();
+        });
+
+        updateTexts();
+    </script>
+</body>
+</html>
